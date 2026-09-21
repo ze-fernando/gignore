@@ -1,0 +1,19 @@
+[project]
+name = "gignore-cli"
+version = "1.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "ze-fernando", email = "zefernando.dev@gmail.com" }]
+dependencies = ["httpx2>=2.13.0", "rich>=15.0.0"]
+requires-python = "==3.14.*"
+readme = "README.md"
+license = "MIT"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+dev = "pdm run src/gignore/main.py"
+
+[project.scripts]
+gignore = "gignore.main:main"
