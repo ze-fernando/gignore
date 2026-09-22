@@ -1,6 +1,6 @@
 [project]
 name = "gignore-cli"
-version = "1.1.1"
+version = "1.1.2"
 description = "A simple CLI for quickly generating .gitignore files from gitignore.io templates"
 authors = [{ name = "ze-fernando", email = "zefernando.dev@gmail.com" }]
 dependencies = ["httpx2>=2.13.0", "rich>=15.0.0"]
