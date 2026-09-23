@@ -2,8 +2,9 @@ import asyncio
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from pathlib import Path
 
-from helpers import *
 from rich.prompt import Prompt
+
+from gignore.helpers import *
 
 
 def create_parser() -> tuple[ArgumentParser, Namespace]:
