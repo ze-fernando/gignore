@@ -23,11 +23,11 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install PDM
-        run: pip install pdm
+      - name: Install Poetry
+        run: pip install poetry
 
       - name: Build
-        run: pdm build
+        run: poetry build
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1

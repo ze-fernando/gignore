@@ -1,0 +1,9 @@
+LICENSE
+pyproject.toml
+src/gignore/main.py
+src/gignore_cli.egg-info/PKG-INFO
+src/gignore_cli.egg-info/SOURCES.txt
+src/gignore_cli.egg-info/dependency_links.txt
+src/gignore_cli.egg-info/entry_points.txt
+src/gignore_cli.egg-info/requires.txt
+src/gignore_cli.egg-info/top_level.txt
