@@ -40,6 +40,62 @@ gignore python,node,vscode
 
 The generated `.gitignore` is created in the **current working directory**.
 
+### Adding templates
+
+If a `.gitignore` already exists, `gignore` will ask whether you want to add the generated rules to the existing file.
+
+For example:
+
+```bash
+gignore python,node
+```
+
+You can confirm the operation interactively, and the new rules will be added to the existing `.gitignore`.
+
+### Overwriting an existing file
+
+To overwrite an existing `.gitignore` without confirmation, use `-o` or `--override`:
+
+```bash
+gignore python --override
+```
+
+or:
+
+```bash
+gignore python -o
+```
+
+### List available templates
+
+Display all available templates:
+
+```bash
+gignore --list
+```
+
+or:
+
+```bash
+gignore -l
+```
+
+### Find templates
+
+Search for templates by name:
+
+```bash
+gignore --find python
+```
+
+or:
+
+```bash
+gignore -f python
+```
+
+You can use this to discover the correct template name before generating your `.gitignore`.
+
 ### Help
 
 Display the available options and examples:
@@ -53,12 +109,6 @@ or:
 ```bash
 gignore -h
 ```
-
-## Warning
-
-If a `.gitignore` already exists in the current directory, **gignore will overwrite it**.
-
-Make sure you do not have important custom rules in the existing file before running the command.
 
 ## Examples
 
@@ -83,9 +133,27 @@ gignore python,node,vscode
 gignore python,windows,macos,linux
 ```
 
+### Find a template
+
+```bash
+gignore -f django
+```
+
+### List all templates
+
+```bash
+gignore -l
+```
+
+### Overwrite an existing `.gitignore`
+
+```bash
+gignore python,node -o
+```
+
 ## How it works
 
-`gignore` sends the requested templates to gitignore.io and uses the returned content to create the `.gitignore` file.
+`gignore` sends the requested templates to gitignore.io and uses the returned content to create or update the `.gitignore` file.
 
 For example:
 
@@ -95,10 +163,16 @@ gignore python,node
 
 requests the `python` and `node` templates and combines their rules into the generated `.gitignore`.
 
+If a `.gitignore` already exists, the generated rules can be added to the existing file. Use `--override` when you want to replace the existing file instead.
+
 ## Features
 
 - Simple command-line interface
 - Supports multiple templates
+- Search for available templates
+- List all available templates
+- Add generated rules to an existing `.gitignore`
+- Optional overwrite with `--override`
 - Generates `.gitignore` in the current directory
 - Built-in `--help`
 - Clear terminal output using [Rich](https://github.com/Textualize/rich)
