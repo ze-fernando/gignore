@@ -1,151 +1,73 @@
 import asyncio
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from pathlib import Path
 
-import httpx2 as http
-from httpx2 import HTTPStatusError
-from rich.console import Console
-
-BASE_URL = "https://donotcommit.com/api"
-
-console = Console()
+from helpers import *
+from rich.prompt import Prompt
 
 
-async def request_content(flags: str) -> str | None:
-    url = f"{BASE_URL}/{flags}"
-
-    async with http.AsyncClient() as client:
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-            return response.text
-
-        except HTTPStatusError as ex:
-            console.print(
-                f"[bold red]✗[/bold red] Não foi possível buscar [yellow]{flags}[/yellow]: {ex}"
-            )
-            return None
-
-
-async def get_tempales() -> str | None:
-    url = f"{BASE_URL}/list"
-
-    async with http.AsyncClient() as client:
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-
-            print(response.text)
-            return response.text
-
-        except HTTPStatusError as ex:
-            console.print(f"[bold red]✗[/bold red] Não foi possível buscar: {ex}")
-            return None
-
-
-async def find_templates(data: list[str]) -> str:
-    url = f"{BASE_URL}/list"
-
-    async with http.AsyncClient() as client:
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-
-            templates = {template.strip() for template in data}
-
-            content = [
-                template.strip()
-                for template in response.text.split(",")
-                if template.strip() in templates
-            ]
-            print(content)
-            return response.text
-
-        except HTTPStatusError as ex:
-            console.print(f"[bold red]✗[/bold red] Não foi possível buscar: {ex}")
-            return ""
-
-
-async def main() -> None:
+def create_parser() -> tuple[ArgumentParser, Namespace]:
     parser = ArgumentParser(
         prog="gignore",
-        description=("Gera um arquivo .gitignore baseado nos templates do gitignore.io."),
-        epilog=(
-            "Exemplos:\n"
-            "  gignore python\n"
-            "  gignore python,node\n\n"
-            "[yellow]Aviso:[/yellow] se já existir um arquivo .gitignore "
-            "no diretório atual, ele será sobrescrito."
-        ),
+        description="Generate a .gitignore file based on templates from donotcommit.com",
+        epilog=("Examples:\n  gignore python,node\n  gignore -f python,node\n"),
         formatter_class=RawDescriptionHelpFormatter,
     )
 
     parser.add_argument(
-        "ignore",
-        help="Templates do .gitignore separados por vírgula. Ex: python,linux,vscode",
-        nargs="?",
+        "templates", help="Comma-separated .gitignore templates. Ex: python,linux,vscode", nargs="?"
     )
 
     parser.add_argument(
-        "-l", "--list", help="Lista os tempaltes do .gitignore disponíveis", action="store_true"
+        "-l", "--list", help="List available .gitignore templates", action="store_true"
     )
 
-    parser.add_argument("-f", "--find", help="Busca os tempaltes do .gitignore disponíveis")
+    parser.add_argument("-f", "--find", help="Search available .gitignore templates")
+
     parser.add_argument(
-        "-o", "--override", help="Força sobrescrita do .gitignore", action="store_true"
+        "-o", "--override", help="Force overwrite of the .gitignore file", action="store_true"
     )
 
-    parser.add_argument("-p", "--path", help="Define a pasta do destino do arquivo")
+    parser.add_argument(
+        "-p", "--path", help="Set the destination directory for the .gitignore file"
+    )
 
-    args = parser.parse_args()
+    return parser, parser.parse_args()
+
+
+async def main() -> None:
+    parser, args = create_parser()
+
     if args.list:
-        await get_tempales()
+        content = await get_templates()
+        console.print(content)
     elif args.find:
-        await find_templates(args.find.split(","))
-    elif args.ignore:
-        path = Path.cwd() / ".gitignore"
-        if path.exists():
-            if args.override:
-                content = await request_content(args.ignore)
+        content = await find_templates(args.find.split(","))  # type: ignore[assignment]
+        console.print(content)
+    elif args.templates:
+        path = Path().cwd() / ".gitignore"
+        content = await get_data(args.templates)
 
-                if not content:
+        if args.path:
+            path = Path(args.path) / ".gitignore"
+
+        if not args.override and path.exists():
+            choice = Prompt.ask(
+                "A .gitignore file already exists at the current path. Do you want to add the new templates to it?\nUse -o or --override to overwrite it instead.",
+                choices=["y", "n"],
+                default="y",
+            )
+            match choice:
+                case "y":
+                    await edit_file(content, path)
+                    return
+                case "n":
                     return
 
-                    path.write_text(
-                        content
-                        + "\n# Generated by gignore\n"
-                        + "# https://github.com/ze-fernando/gignore\n",
-                        encoding="utf-8",
-                    )
-
-                    console.print(
-                        f"[bold green]✓[/bold green] .gitignore criado com sucesso em [bold]{path}[/bold]"
-                    )
-            else:
-                print("Coe po ja tem")
-        else:
-            path /= ".gitignore"
-
-            content = await request_content(args.ignore)
-
-            if not content:
-                return
-
-                path.write_text(
-                    content
-                    + "\n# Generated by gignore\n"
-                    + "# https://github.com/ze-fernando/gignore\n",
-                    encoding="utf-8",
-                )
-
-                console.print(
-                    f"[bold green]✓[/bold green] .gitignore criado com sucesso em [bold]{path}[/bold]"
-                )
+        await create_file(content, path)
 
     else:
-        parser.error("informe um template ou use --list")
-
-        console.print(f"[cyan]⟳[/cyan] Buscando templates: [bold]{args.ignore}[/bold]")
+        parser.print_help()
 
 
 if __name__ == "__main__":

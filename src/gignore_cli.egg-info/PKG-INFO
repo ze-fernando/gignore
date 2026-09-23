@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: gignore-cli
+Version: 1.0.0
+Summary: Default template for PDM package
+Author-email: ze-fernando <zefernando.dev@gmail.com>
+License-Expression: MIT
+Requires-Python: ==3.14.*
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: httpx2>=2.13.0
+Requires-Dist: rich>=15.0.0
+Dynamic: license-file
